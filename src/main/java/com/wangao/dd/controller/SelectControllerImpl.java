@@ -14,12 +14,6 @@ public class SelectControllerImpl implements SelelctController{
     @Autowired
     private DataBaseService dataBaseService;
 
-    /**
-     * 传入select语句
-     *
-     * @param requestBody
-     * @return
-     */
     @PostMapping("/")
     public  ResponseEntity<?>  getSelectResult(@RequestBody Map<String, String> requestBody) {
         String sql = requestBody.get("str");

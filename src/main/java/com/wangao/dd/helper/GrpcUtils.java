@@ -2,12 +2,11 @@ package com.wangao.dd.helper;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.PreDestroy;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Service
+
 public class GrpcUtils {
 
     @PreDestroy

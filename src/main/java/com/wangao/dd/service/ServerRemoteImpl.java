@@ -3,6 +3,7 @@ package com.wangao.dd.service;
 import com.wangao.dd.protohelper.*;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Map;
@@ -10,9 +11,12 @@ import java.util.Set;
 
 @GrpcService
 public class ServerRemoteImpl extends RemoteServiceGrpc.RemoteServiceImplBase {
+    @Autowired
+    private DataBaseService dataBaseService;
+
     @Override
     public void get(RemoteRequest request, StreamObserver<RemoteResponse> responseObserver) {
-        List<Map<String, Object>> elements= OptimisedSelect(request.getSql());
+        List<Map<String, Object>> elements= dataBaseService.select(request.getSql());
         if (elements.isEmpty()) {
             responseObserver.onNext(null);
             responseObserver.onCompleted();
@@ -32,10 +36,5 @@ public class ServerRemoteImpl extends RemoteServiceGrpc.RemoteServiceImplBase {
         }
         responseObserver.onNext(builder.build());
         responseObserver.onCompleted();
-    }
-
-    // 这里调用你的方法
-    private List<Map<String, Object>> OptimisedSelect(String sql){
-        return null;
     }
 }
