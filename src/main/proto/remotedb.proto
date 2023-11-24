@@ -1,0 +1,27 @@
+syntax = "proto3";
+option java_multiple_files = true;
+option java_package = "com.wangao.dd.protohelper";
+//import "google/protobuf/any.proto";
+
+service RemoteService {
+  rpc Get (RemoteRequest) returns (RemoteResponse);
+}
+
+message RemoteRequest {
+  string sql = 1;
+}
+
+message RemoteResponse {
+  repeated MyMap data = 1;
+}
+
+message MyMap {
+  repeated KeyValue entry = 1;
+}
+
+
+message KeyValue {
+  string key = 1;
+  string value = 2; // 使用 Any 类型作为值的容器，以支持不同类型的值
+}
+
