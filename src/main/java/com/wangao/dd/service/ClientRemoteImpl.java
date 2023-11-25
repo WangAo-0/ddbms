@@ -9,7 +9,6 @@ import java.util.List;
 @Service
 public class ClientRemoteImpl {
     public Object doSelectRemote(String serverAddress, int port, String sql) {
-        // String serverAddress = "localhost";
         ManagedChannel channel = GrpcUtils.getChannel(serverAddress, port);
         RemoteServiceGrpc.RemoteServiceBlockingStub stub = RemoteServiceGrpc.newBlockingStub(channel);
         RemoteRequest putRequest = RemoteRequest.newBuilder()
@@ -17,7 +16,7 @@ public class ClientRemoteImpl {
                 .build();
         RemoteResponse get = stub.get(putRequest);
         List<MyMap> dataList = get.getDataList();
-        if (!dataList.isEmpty()) {
+        if (dataList.isEmpty()) {
             return null;
         }
         return dataList;

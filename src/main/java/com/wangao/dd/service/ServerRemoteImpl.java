@@ -27,12 +27,11 @@ public class ServerRemoteImpl extends RemoteServiceGrpc.RemoteServiceImplBase {
             MyMap.Builder mbuilder = MyMap.newBuilder();
             Map<String,Object> map = elements.get(i);
             Set<Map.Entry<String, Object>> entries = map.entrySet();
-            int index = 0;
             for (Map.Entry<String, Object> entry : entries) { // 组装map
                 KeyValue keyValue = KeyValue.newBuilder().setKey(entry.getKey()).setValue((String) map.get(entry.getKey()).toString()).build();//map.get(entry.getKey()));
-                mbuilder.setEntry(index++,keyValue);
+                mbuilder.addEntry(keyValue);
             }
-            builder.setData(i,mbuilder.build()); //组装list
+            builder.addData(mbuilder.build()); //组装list
         }
         responseObserver.onNext(builder.build());
         responseObserver.onCompleted();

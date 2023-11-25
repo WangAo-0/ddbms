@@ -17,8 +17,11 @@ public class SelectControllerImpl implements SelelctController{
     @PostMapping("/")
     public  ResponseEntity<?>  getSelectResult(@RequestBody Map<String, String> requestBody) {
         String sql = requestBody.get("str");
-        List<Map<String, Object>> select = dataBaseService.select(sql);
-        return new ResponseEntity<>(select.toString(),HttpStatus.OK);
+        List<Map<String, Object>> selectRows = dataBaseService.select(sql);
+        if(selectRows == null){
+            return new ResponseEntity<>("#not found",HttpStatus.OK);
+        }
+        return new ResponseEntity<>(selectRows.toString(),HttpStatus.OK);
     }
 
 }

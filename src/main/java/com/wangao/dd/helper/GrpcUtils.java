@@ -19,17 +19,17 @@ public class GrpcUtils {
 
     public static ManagedChannel getChannel(String serverAddress, int port) {
         if (cacheChannel.isEmpty()) {
-            ManagedChannel channel = ManagedChannelBuilder.forAddress(serverAddress, port + 10)
+            ManagedChannel channel = ManagedChannelBuilder.forAddress(serverAddress, port)
                     .usePlaintext()
                     .build();
-            cacheChannel.put(serverAddress + (port + 10), channel);
+            cacheChannel.put(serverAddress + (port ), channel);
             return channel;
         } else {
-            ManagedChannel cachedChannel = cacheChannel.computeIfAbsent(serverAddress + (port + 10), key -> ManagedChannelBuilder.forAddress(serverAddress, port + 10)
+            ManagedChannel cachedChannel = cacheChannel.computeIfAbsent(serverAddress + (port), key -> ManagedChannelBuilder.forAddress(serverAddress, port )
                     .usePlaintext()
                     .build());
             if (cachedChannel.isShutdown()) {
-                return ManagedChannelBuilder.forAddress(serverAddress, port + 10)
+                return ManagedChannelBuilder.forAddress(serverAddress, port )
                         .usePlaintext()
                         .build();
             }
