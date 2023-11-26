@@ -23,4 +23,10 @@ public class DataBaseServiceImpl implements DataBaseService {
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(str);
         return rows;
     }
+
+    @Override
+    public int insert(String sql) {
+        int update = jdbcTemplate.update(sql);
+        return update;
+    }
 }
