@@ -1,6 +1,5 @@
 package com.wangao.dd.controller;
 
-import com.wangao.dd.service.DataBaseService;
 import com.wangao.dd.service.DepartSQL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,12 +10,12 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-public class SelectControllerImpl implements SelelctController{
+public class SqlControllerImpl implements SqlController{
     @Autowired
     private DepartSQL departSQL;
 
     @PostMapping("/")
-    public  ResponseEntity<?>  getSelectResult(@RequestBody Map<String, String> requestBody) {
+    public  ResponseEntity<?>  getSqlResult(@RequestBody Map<String, String> requestBody) {
         String sql = requestBody.get("str");
         List<Map<String, Object>> selectRows = departSQL.sql(sql);
         if(selectRows == null){
@@ -24,5 +23,4 @@ public class SelectControllerImpl implements SelelctController{
         }
         return new ResponseEntity<>(selectRows.toString()+"\n",HttpStatus.OK);
     }
-
 }

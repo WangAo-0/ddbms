@@ -6,5 +6,5 @@ import java.util.Map;
 public interface DataBaseService {
     List<Map<String, Object>> select(String str);
 
-    int insert(String sql);
+    int update(String sql);
 }

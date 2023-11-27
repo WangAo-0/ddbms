@@ -16,7 +16,18 @@ public class ServerRemoteImpl extends RemoteServiceGrpc.RemoteServiceImplBase {
 
     @Override
     public void get(RemoteRequest request, StreamObserver<RemoteResponse> responseObserver) {
-        List<Map<String, Object>> elements= dataBaseService.select(request.getSql());
+        String sql = request.getSql();
+        int affectsRows=0;
+       if(sql.contains("UPDATE") || sql.contains("INSERT")) {
+           affectsRows= dataBaseService.update(request.getSql());
+           responseObserver.onNext(RemoteResponse.newBuilder().addData(MyMap.newBuilder().addEntry(KeyValue.newBuilder().setKey("Affects").setValue(String.valueOf(affectsRows)).build()).build()).build());
+           responseObserver.onCompleted();
+        }
+        List<Map<String, Object>> elements = null;
+        if(sql.contains("SELECT")){
+            elements= dataBaseService.select(request.getSql());
+        }
+
         if (elements.isEmpty()) {
             responseObserver.onNext(null);
             responseObserver.onCompleted();

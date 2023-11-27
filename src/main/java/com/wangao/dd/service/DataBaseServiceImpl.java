@@ -25,7 +25,7 @@ public class DataBaseServiceImpl implements DataBaseService {
     }
 
     @Override
-    public int insert(String sql) {
+    public int update(String sql) {
         int update = jdbcTemplate.update(sql);
         return update;
     }

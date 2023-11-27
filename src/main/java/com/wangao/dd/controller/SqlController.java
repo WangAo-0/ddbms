@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Map;
 
-public interface SelelctController {
+public interface SqlController {
     /**
      * 传入select语句
      *
@@ -14,5 +14,5 @@ public interface SelelctController {
      * @return
      */
     @PostMapping("/")
-    ResponseEntity<?> getSelectResult(@RequestBody Map<String, String> requestBody);
+    ResponseEntity<?> getSqlResult(@RequestBody Map<String, String> requestBody);
 }
