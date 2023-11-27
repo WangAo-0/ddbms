@@ -31,34 +31,9 @@ public class DepartSQL {
         String sqlStatement1 = "SELECT * FROM Books WHERE book_id BETWEEN 10 AND 200";
         String sqlStatement2 = "SELECT * FROM Books WHERE book_id NOT BETWEEN 50 AND 201";
         String sqlStatement3 = "SELECT * FROM Books";
-        String sqlStatement4 = "INSERT INTO Books (book_id, title, author_id, ISBN, published_date, genre) VALUES (2, 2, 3, 4, 2023-11-21, 6)";
-        String sqlStatement5 = "INSERT INTO Books (book_id, title, author_id, ISBN, published_date, genre) VALUES (3, 2, 3, 4, 2023-11-21, 6)";
-
-
-
-//        String sqlStatement3 = "SELECT Books.* " +
-//                "FROM Books " +
-//                "INNER JOIN Borrowings ON Books.book_id = Borrowings.book_id " +
-//                "WHERE Borrowings.return_date IS NULL";
-//        String sqlStatement4 = "SELECT Books.* " +
-//                "FROM Books " +
-//                "INNER JOIN Borrowings ON Books.book_id = Borrowings.book_id " +
-//                "WHERE Borrowings.user_id = 'your_user_id'";
-//        String sqlStatement5 = "SELECT author_id, COUNT(book_id) AS book_count " +
-//                "FROM Books " +
-//                "GROUP BY author_id";
-//        processBookIdQuery(sqlStatement1);
-//        processBookIdQuery(sqlStatement2);
-//        processBookIdQuery(sqlStatement3);
-//        processBookIdQuery(sqlStatement4);
-//        processBookIdQuery(sqlStatement5);
-
-//        List<Map<String, Object>> selectL=processBookIdQuery(sqlStatement);
-
-//        List<Map<String, Object>> select=new ArrayList<>();
-//        Map<String, Object> map1 = new HashMap<>();
-//        map1.put("case:", sqlStatement);
-//        select.add(map1);
+        String sqlStatement6 = "INSERT INTO Books (book_id, title, author_id, ISBN, published_date, genre) VALUES (20, 2, 3, 4,\"2013-11-09\", 6)";
+        String sqlStatement7 = "INSERT INTO Users (user_id, username, email, address) VALUES (2 ,2 , 2 , 2)";
+        String sqlStatement8 = "UPDATE Users SET  username = 3, email = 3,address = 3  WHERE user_id = 2";
         return processBookIdQuery(sqlStatement);
     }
 
@@ -91,14 +66,18 @@ public class DepartSQL {
             processAuthorCountQuery(sqlStatement);
         } */
           else if(sqlStatement.contains("book_id =")){
-            int bookId = extractBookId(sqlStatement);
+//            int bookId = extractBookId(sqlStatement);
             // 根据bookid查询不同站点
             return querySiteById(sqlStatement);
-        } else if(sqlStatement.contains("INSERT")){
+        } else if(sqlStatement.contains("INSERT")&&sqlStatement.contains("book_id")){
             int bookId = insertDepart(sqlStatement);
             bookId=bookId/100+1;
             return recogServer(bookId,sqlStatement);
-        } else {
+        }
+          /*else if(sqlStatement.contains("UPDATE")){
+            return querySiteById(sqlStatement);
+        } */
+        else {
             // 其他情况，根据实际需求进行处理
             System.out.println("SQL query: " + sqlStatement);
             System.out.println("search from three servers" );
@@ -151,13 +130,21 @@ public class DepartSQL {
     }
 
     private List<Map<String, Object>> recogServer(int serverNum,String sqlStatement){
+        int affects=0;
         List<Map<String, Object>> single=new ArrayList<>();
         Object mymap;
         int recogPort = Integer.parseInt(port);
         recogPort=recogPort-9516;
         if (recogPort==serverNum){
             System.out.println("Search in local database");
-            single=dataBaseService.select(sqlStatement);
+            if (sqlStatement.contains("UPDATE")||sqlStatement.contains("INSERT")){
+                affects=dataBaseService.update(sqlStatement);
+                Map<String, Object> innerMap = new HashMap<>();
+                innerMap.put("Affects", affects);
+                single.add(innerMap);
+            } else {
+                single=dataBaseService.select(sqlStatement);
+            }
         } else if (serverNum==1){
             System.out.println("Remote Search in database1");
             mymap=clientRemote.doSelectRemote(serverAddress,port1,sqlStatement);
@@ -182,6 +169,44 @@ public class DepartSQL {
         }
         return  single;
     }
+
+    private List<Map<String, Object>> recogServerInsert(int serverNum,String sqlStatement){
+        int affects=0;
+        List<Map<String, Object>> single=new ArrayList<>();
+        Object mymap;
+        int recogPort = Integer.parseInt(port);
+        recogPort=recogPort-9516;
+        if (recogPort==serverNum){
+            System.out.println("Search in local database");
+            affects=dataBaseService.update(sqlStatement);
+            Map<String, Object> innerMap = new HashMap<>();
+            innerMap.put("Affects", affects);
+            single.add(innerMap);
+        } else if (serverNum==1){
+            System.out.println("Remote Search in database1");
+            mymap=clientRemote.doSelectRemote(serverAddress,port1,sqlStatement);
+            if (mymap==null){
+                return single;
+            }
+            single=transMap((List<MyMap>) mymap);
+        } else if (serverNum==2){
+            System.out.println("Remote Search in database2");
+            mymap=clientRemote.doSelectRemote(serverAddress,port2,sqlStatement);
+            if (mymap==null){
+                return single;
+            }
+            single=transMap((List<MyMap>) mymap);
+        } else if (serverNum==3){
+            System.out.println("Remote Search in database3");
+            mymap=clientRemote.doSelectRemote(serverAddress,port3,sqlStatement);
+            if (mymap==null){
+                return single;
+            }
+            single=transMap((List<MyMap>) mymap);
+        }
+        return  single;
+    }
+
     // 根据bookid查询不同站点的示例函数，需要根据实际情况替换为grpc生成的函数调用
     private List<Map<String, Object>> querySiteById(String sqlStatement) {
         int bookId = extractBookId(sqlStatement);
@@ -199,9 +224,23 @@ public class DepartSQL {
         }
         return select;
         // 根据bookid调用grpc生成的函数查询站点
-        // site1QueryById(bookId);
-        // site2QueryById(bookId);
-        // site3QueryById(bookId);
+    }
+
+    private List<Map<String, Object>> querySiteByIdUpdate(String sqlStatement) {
+        int bookId = extractBookId(sqlStatement);
+        List<Map<String, Object>> select = new ArrayList<>();
+        System.out.println("Querying: " + bookId);
+        if(bookId >= 1&&bookId <= 100){
+            System.out.println("Search on server 1 :" + bookId);
+            select=recogServerInsert(1,sqlStatement);
+        } else if (bookId >= 101&&bookId <= 200) {
+            System.out.println("Search on server 2 :" + bookId);
+            select=recogServerInsert(2,sqlStatement);
+        } else if (bookId >= 201&&bookId <= 300) {
+            System.out.println("Search on server 3 :" + bookId);
+            select=recogServerInsert(3,sqlStatement);
+        }
+        return select;
     }
 
     private  List<Map<String, Object>> processRangeQuery(String sqlStatement) {
@@ -333,12 +372,6 @@ public class DepartSQL {
         return lowerBound1 <= lowerBound2 && upperBound1 >= upperBound2;
     }
 
-    private static String createSubQueryWithoutCoverage(String sqlStatement, int lower, int upper) {
-        // 创建未覆盖部分的子查询
-        String subQuery = createSubQueryWithRange(sqlStatement, lower, upper);
-        // 移除 NOT BETWEEN
-        return subQuery.replaceAll("(?i)\\bbook_id\\b\\s*not\\s*between\\s*\\d+\\s*and\\s*\\d+", "");
-    }
 
     private static List<Map<String, Integer>> remainRange(int lowerBound, int upperBound, int rangeStart, int rangeEnd) {
         List<Map<String, Integer>> remainingRanges = new ArrayList<>();
@@ -370,22 +403,7 @@ public class DepartSQL {
             firstRange.put("end", rangeEnd);
             remainingRanges.add(firstRange);
         }
-//        else {
-//            // 计算未覆盖完的区域的下届和上届
-//            int remainingLower = Math.max(lowerBound, rangeStart);
-//            int remainingUpper = Math.min(upperBound, rangeEnd);
-//
-//            // 如果计算出的未覆盖范围低于后两个参数指定的区间，将下届提升至指定的下届
-//            if (remainingLower < rangeStart) {
-//                remainingLower = rangeStart;
-//            }
-//
-//            // 添加一个区间
-//            Map<String, Integer> remainingRange = new HashMap<>();
-//            remainingRange.put("start", remainingLower);
-//            remainingRange.put("end", remainingUpper);
-//            remainingRanges.add(remainingRange);
-//        }
+
 
         return remainingRanges;
     }

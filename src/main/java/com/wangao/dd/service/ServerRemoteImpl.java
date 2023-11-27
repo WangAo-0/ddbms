@@ -22,6 +22,7 @@ public class ServerRemoteImpl extends RemoteServiceGrpc.RemoteServiceImplBase {
            affectsRows= dataBaseService.update(request.getSql());
            responseObserver.onNext(RemoteResponse.newBuilder().addData(MyMap.newBuilder().addEntry(KeyValue.newBuilder().setKey("Affects").setValue(String.valueOf(affectsRows)).build()).build()).build());
            responseObserver.onCompleted();
+           return;
         }
         List<Map<String, Object>> elements = null;
         if(sql.contains("SELECT")){
